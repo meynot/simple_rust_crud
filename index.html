@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Users · Admin</title>
+<style>
+/* ── Reset & variables ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pri:       #4f46e5;
+  --pri-h:     #4338ca;
+  --pri-bg:    #eef2ff;
+  --red:       #ef4444;
+  --red-h:     #dc2626;
+  --red-bg:    #fef2f2;
+  --green:     #22c55e;
+  --bg:        #f1f5f9;
+  --card:      #ffffff;
+  --border:    #e2e8f0;
+  --text:      #1e293b;
+  --muted:     #64748b;
+  --radius:    8px;
+  --shadow:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-lg: 0 10px 25px -5px rgba(0,0,0,.12);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+.header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--shadow);
+}
+.logo {
+  width: 34px; height: 34px;
+  background: var(--pri);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 15px; letter-spacing: -1px;
+  flex-shrink: 0;
+}
+.header h1 { font-size: 16px; font-weight: 600; }
+.header-gap { flex: 1; }
+.header-pill {
+  background: var(--pri-bg);
+  color: var(--pri);
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Main ──────────────────────────────────────────────────────────────────── */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+
+/* ── Toolbar ───────────────────────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-box {
+  position: relative;
+  flex: 1;
+  max-width: 340px;
+  min-width: 200px;
+}
+.search-box svg {
+  position: absolute;
+  left: 10px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.search-input:focus    { border-color: var(--pri); box-shadow: 0 0 0 3px rgba(79,70,229,.12); }
+.search-input::placeholder { color: var(--muted); }
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  white-space: nowrap;
+  line-height: 1;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary   { background: var(--pri);  color: white; }
+.btn-primary:hover  { background: var(--pri-h); }
+.btn-outline   { background: var(--card); color: var(--text); border-color: var(--border); }
+.btn-outline:hover  { background: var(--bg); }
+.btn-danger    { background: var(--red);  color: white; }
+.btn-danger:hover   { background: var(--red-h); }
+.btn-sm { padding: 5px 10px; font-size: 13px; }
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border: none; border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  transition: background .12s, color .12s;
+}
+.icon-btn:hover           { background: var(--bg); }
+.icon-btn.edit:hover      { color: var(--pri);  background: var(--pri-bg); }
+.icon-btn.delete:hover    { color: var(--red);  background: var(--red-bg); }
+
+/* ── Table card ────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: var(--bg); }
+th {
+  padding: 10px 16px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+}
+td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background .1s; }
+tbody tr:hover { background: #fafbfd; }
+
+/* ── Avatar ────────────────────────────────────────────────────────────────── */
+.user-cell { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+.user-info .name  { font-weight: 500; }
+.user-info .email { color: var(--muted); font-size: 12px; }
+.actions          { display: flex; gap: 4px; align-items: center; }
+
+/* ── Status badge ──────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-blue  { background: var(--pri-bg); color: var(--pri); }
+
+/* ── Pagination ────────────────────────────────────────────────────────────── */
+.pagination {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pag-info { font-size: 13px; color: var(--muted); }
+.pag-btns { display: flex; gap: 4px; }
+.pag-btn {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: background .1s, color .1s, border-color .1s;
+}
+.pag-btn:hover:not([disabled]) { background: var(--bg); }
+.pag-btn.active { background: var(--pri); color: white; border-color: var(--pri); }
+.pag-btn[disabled] { opacity: .35; cursor: not-allowed; }
+
+/* ── Empty / Skeleton ──────────────────────────────────────────────────────── */
+.empty {
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--muted);
+}
+.empty-icon  { font-size: 52px; margin-bottom: 14px; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+
+.skel {
+  border-radius: 4px;
+  background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.skel-block  { height: 14px; border-radius: 4px; }
+.skel-circle { border-radius: 50%; flex-shrink: 0; }
+
+/* ── Modal overlay ─────────────────────────────────────────────────────────── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  z-index: 100;
+  opacity: 0; visibility: hidden;
+  transition: opacity .2s, visibility .2s;
+}
+.overlay.open { opacity: 1; visibility: visible; }
+.modal {
+  background: var(--card);
+  border-radius: 14px;
+  width: 100%; max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(20px) scale(.97);
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.overlay.open .modal { transform: translateY(0) scale(1); }
+.modal-head {
+  padding: 20px 24px 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-head h2 { font-size: 17px; font-weight: 700; }
+.modal-body    { padding: 20px 24px; }
+.modal-foot {
+  padding: 0 24px 20px;
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+
+/* ── Form ──────────────────────────────────────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-group label {
+  display: block;
+  font-size: 13px; font-weight: 500;
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px; color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  background: var(--card);
+}
+.form-input:focus { border-color: var(--pri); box-shadow: 0 0 0 3px rgba(79,70,229,.12); }
+.form-input.err   { border-color: var(--red); }
+.form-err  { color: var(--red); font-size: 12px; margin-top: 4px; display: none; }
+.form-err.show    { display: block; }
+.form-hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+/* ── Confirm modal ─────────────────────────────────────────────────────────── */
+.confirm-body p     { font-size: 15px; }
+.confirm-body .sub  { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.confirm-icon {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--red-bg);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+  color: var(--red);
+}
+
+/* ── Toast ─────────────────────────────────────────────────────────────────── */
+.toast-wrap {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 200;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  font-size: 14px; font-weight: 500;
+  min-width: 230px;
+  animation: toast-in .22s ease;
+  transition: opacity .3s;
+}
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+.toast-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.toast.success .toast-dot { background: var(--green); }
+.toast.error   .toast-dot { background: var(--red); }
+@keyframes toast-in { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .wrap { padding: 16px; }
+  .hide-sm { display: none; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .search-box { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="logo">U</div>
+  <h1>Users Management</h1>
+  <div class="header-gap"></div>
+  <span class="header-pill" id="hd-count">Loading…</span>
+</header>
+
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<main class="wrap">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input id="search" type="text" class="search-input" placeholder="Search name or email…" autocomplete="off">
+    </div>
+    <button class="btn btn-primary" id="btn-add">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Add User
+    </button>
+  </div>
+
+  <!-- Table card -->
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th class="hide-sm">Date of Birth</th>
+          <th class="hide-sm">Created</th>
+          <th class="hide-sm">Updated</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="pagination" class="pagination" style="display:none"></div>
+  </div>
+</main>
+
+<!-- ── Create / Edit Modal ────────────────────────────────────────────────── -->
+<div class="overlay" id="form-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <h2 id="modal-title">Add User</h2>
+      <button class="icon-btn" id="form-close" aria-label="Close">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <form id="user-form">
+      <div class="modal-body">
+
+        <div class="form-group">
+          <label for="f-name">Full Name</label>
+          <input id="f-name" type="text" class="form-input" placeholder="Alice Johnson" required autocomplete="off">
+          <div class="form-err" id="e-name"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-email">Email Address</label>
+          <input id="f-email" type="email" class="form-input" placeholder="alice@example.com" required autocomplete="off">
+          <div class="form-err" id="e-email"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-dob">Date of Birth</label>
+          <input id="f-dob" type="date" class="form-input" required>
+          <div class="form-err" id="e-dob"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-pw">Password</label>
+          <input id="f-pw" type="password" class="form-input" placeholder="••••••••" autocomplete="new-password">
+          <div class="form-hint" id="pw-hint">Minimum 8 characters.</div>
+          <div class="form-err" id="e-pw"></div>
+        </div>
+
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-outline" id="form-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="form-submit">Add User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Delete Confirmation Modal ──────────────────────────────────────────── -->
+<div class="overlay" id="del-overlay">
+  <div class="modal" style="max-width:420px" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h2>Delete User</h2>
+      <button class="icon-btn" id="del-close" aria-label="Close">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body confirm-body">
+      <div class="confirm-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4h6v2"/>
+        </svg>
+      </div>
+      <p>Delete <strong id="del-name"></strong>?</p>
+      <p class="sub">This user will be soft-deleted and removed from all listings. This action cannot be undone.</p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-outline" id="del-cancel">Cancel</button>
+      <button type="button" class="btn btn-danger" id="del-confirm">Delete User</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast container ────────────────────────────────────────────────────── -->
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- ── Script ─────────────────────────────────────────────────────────────── -->
+<script>
+'use strict';
+
+// ── Config & state ────────────────────────────────────────────────────────────
+const BASE = '/api';
+let s = { page: 1, perPage: 10, search: '', total: 0, pages: 0 };
+let editId     = null;   // null = create, number = edit
+let delTarget  = null;   // id pending deletion
+let searchTm   = null;
+
+// ── HTTP ─────────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  try {
+    const r = await fetch(BASE + path, opts);
+    return await r.json();
+  } catch (e) {
+    return { success: false, message: e.message };
+  }
+}
+
+// ── Avatar ───────────────────────────────────────────────────────────────────
+const COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6','#ef4444','#06b6d4','#f97316','#14b8a6'];
+function avatarColor(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+  return COLORS[Math.abs(h) % COLORS.length];
+}
+function initials(n) {
+  return n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+// ── Dates ────────────────────────────────────────────────────────────────────
+function fmtDate(str) {
+  if (!str) return '—';
+  const d = new Date(str.includes('T') ? str : str.replace(' ','T'));
+  return isNaN(d) ? str : d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+}
+
+// ── HTML escape ──────────────────────────────────────────────────────────────
+const esc = s => String(s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+// ── Skeleton rows ─────────────────────────────────────────────────────────────
+function renderSkeleton(n=6) {
+  document.getElementById('tbody').innerHTML = Array.from({length:n}, () => `
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <div class="skel skel-circle" style="width:36px;height:36px"></div>
+        <div style="flex:1">
+          <div class="skel skel-block" style="width:55%;margin-bottom:6px"></div>
+          <div class="skel skel-block" style="width:75%"></div>
+        </div>
+      </div></td>
+      <td class="hide-sm"><div class="skel skel-block" style="width:90px"></div></td>
+      <td class="hide-sm"><div class="skel skel-block" style="width:110px"></div></td>
+      <td class="hide-sm"><div class="skel skel-block" style="width:110px"></div></td>
+      <td><div class="skel skel-block" style="width:60px"></div></td>
+    </tr>`).join('');
+  document.getElementById('pagination').style.display = 'none';
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+function renderEmpty() {
+  const isSearch = !!s.search;
+  document.getElementById('tbody').innerHTML = `
+    <tr><td colspan="5">
+      <div class="empty">
+        <div class="empty-icon">${isSearch ? '🔍' : '👤'}</div>
+        <div class="empty-title">${isSearch ? 'No results found' : 'No users yet'}</div>
+        <p>${isSearch ? `No match for "<strong>${esc(s.search)}</strong>".` : 'Click <strong>Add User</strong> to get started.'}</p>
+      </div>
+    </td></tr>`;
+  document.getElementById('pagination').style.display = 'none';
+}
+
+// ── Table rows ────────────────────────────────────────────────────────────────
+function renderRows(users) {
+  if (!users.length) { renderEmpty(); return; }
+  document.getElementById('tbody').innerHTML = users.map(u => `
+    <tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar" style="background:${avatarColor(u.name)}">${esc(initials(u.name))}</div>
+          <div class="user-info">
+            <div class="name">${esc(u.name)}</div>
+            <div class="email">${esc(u.email)}</div>
+          </div>
+        </div>
+      </td>
+      <td class="hide-sm">${fmtDate(u.dob)}</td>
+      <td class="hide-sm">${fmtDate(u.created_at)}</td>
+      <td class="hide-sm">${fmtDate(u.updated_at)}</td>
+      <td>
+        <div class="actions">
+          <button class="icon-btn edit"   title="Edit"   onclick="openEdit(${u.id})">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+            </svg>
+          </button>
+          <button class="icon-btn delete" title="Delete" onclick="openDelete(${u.id},${JSON.stringify(esc(u.name))})">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+            </svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+function renderPagination() {
+  const pag = document.getElementById('pagination');
+  if (s.pages <= 1) { pag.style.display = 'none'; return; }
+  pag.style.display = '';
+
+  const from = Math.min((s.page-1)*s.perPage+1, s.total);
+  const to   = Math.min(s.page*s.perPage, s.total);
+
+  let nums = [];
+  if (s.pages <= 7) { for(let i=1;i<=s.pages;i++) nums.push(i); }
+  else {
+    nums = [1];
+    if (s.page > 3) nums.push('…');
+    for(let i=Math.max(2,s.page-1); i<=Math.min(s.pages-1,s.page+1); i++) nums.push(i);
+    if (s.page < s.pages-2) nums.push('…');
+    nums.push(s.pages);
+  }
+
+  pag.innerHTML = `
+    <span class="pag-info">Showing ${from}–${to} of ${s.total} users</span>
+    <div class="pag-btns">
+      <button class="pag-btn" ${s.page<=1?'disabled':''} onclick="gotoPage(${s.page-1})">‹</button>
+      ${nums.map(n => n==='…'
+        ? `<button class="pag-btn" disabled>…</button>`
+        : `<button class="pag-btn ${n===s.page?'active':''}" onclick="gotoPage(${n})">${n}</button>`
+      ).join('')}
+      <button class="pag-btn" ${s.page>=s.pages?'disabled':''} onclick="gotoPage(${s.page+1})">›</button>
+    </div>`;
+}
+
+// ── Load users ────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  renderSkeleton();
+  const qs = new URLSearchParams({ page: s.page, per_page: s.perPage });
+  if (s.search) qs.set('search', s.search);
+
+  const data = await api('GET', '/users?' + qs);
+  if (!data.success) { toast(data.message || 'Failed to load users.', 'error'); return; }
+
+  s.total = data.total;
+  s.pages = data.pages;
+  document.getElementById('hd-count').textContent = `${data.total} user${data.total!==1?'s':''}`;
+  renderRows(data.data);
+  renderPagination();
+}
+
+function gotoPage(n) { s.page = n; loadUsers(); }
+
+// ── Error helpers ─────────────────────────────────────────────────────────────
+function clearErrors() {
+  ['name','email','dob','pw'].forEach(f => {
+    const e = document.getElementById('e-'+f);
+    const i = document.getElementById('f-'+f);
+    if(e){ e.textContent=''; e.classList.remove('show'); }
+    if(i) i.classList.remove('err');
+  });
+}
+function fieldErr(f, msg) {
+  const e = document.getElementById('e-'+f);
+  const i = document.getElementById('f-'+f);
+  if(e){ e.textContent=msg; e.classList.add('show'); }
+  if(i) i.classList.add('err');
+}
+
+// ── Form modal ────────────────────────────────────────────────────────────────
+function openCreate() {
+  editId = null;
+  document.getElementById('modal-title').textContent  = 'Add User';
+  document.getElementById('form-submit').textContent  = 'Add User';
+  document.getElementById('pw-hint').textContent      = 'Minimum 8 characters.';
+  document.getElementById('f-pw').required            = true;
+  document.getElementById('user-form').reset();
+  clearErrors();
+  document.getElementById('form-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 60);
+}
+
+async function openEdit(id) {
+  editId = id;
+  document.getElementById('modal-title').textContent  = 'Edit User';
+  document.getElementById('form-submit').textContent  = 'Save Changes';
+  document.getElementById('pw-hint').textContent      = 'Leave blank to keep current password.';
+  document.getElementById('f-pw').required            = false;
+  document.getElementById('user-form').reset();
+  clearErrors();
+
+  const res = await api('GET', '/users/' + id);
+  if (!res.success) { toast('Could not load user.', 'error'); return; }
+
+  const u = res.data;
+  document.getElementById('f-name').value  = u.name;
+  document.getElementById('f-email').value = u.email;
+  document.getElementById('f-dob').value   = u.dob;
+  document.getElementById('form-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 60);
+}
+
+function closeForm() { document.getElementById('form-overlay').classList.remove('open'); }
+
+async function onFormSubmit(e) {
+  e.preventDefault();
+  clearErrors();
+
+  const name  = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const dob   = document.getElementById('f-dob').value;
+  const pw    = document.getElementById('f-pw').value;
+
+  let ok = true;
+  if (!name)  { fieldErr('name', 'Full name is required.');           ok = false; }
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+              { fieldErr('email', 'A valid email is required.');      ok = false; }
+  if (!dob)   { fieldErr('dob', 'Date of birth is required.');        ok = false; }
+  if (!editId && pw.length < 8)
+              { fieldErr('pw', 'Password must be at least 8 chars.'); ok = false; }
+  if (editId && pw && pw.length < 8)
+              { fieldErr('pw', 'Password must be at least 8 chars.'); ok = false; }
+  if (!ok) return;
+
+  const btn = document.getElementById('form-submit');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Saving…';
+
+  const body = { name, email, dob };
+  if (pw) body.password = pw;
+  else if (!editId) body.password = pw;   // create always sends it
+
+  const res = editId
+    ? await api('PUT',  '/users/' + editId, body)
+    : await api('POST', '/users',           body);
+
+  btn.disabled = false;
+  btn.textContent = orig;
+
+  if (!res.success) {
+    const msg = (res.message||'').toLowerCase();
+    if (msg.includes('unique') || msg.includes('email'))
+      fieldErr('email', 'This email is already in use.');
+    else
+      toast(res.message || 'Something went wrong.', 'error');
+    return;
+  }
+
+  closeForm();
+  toast(editId ? 'User updated successfully.' : 'User created successfully.', 'success');
+  if (!editId) { s.page = 1; }
+  await loadUsers();
+}
+
+// ── Delete modal ──────────────────────────────────────────────────────────────
+function openDelete(id, name) {
+  delTarget = id;
+  document.getElementById('del-name').textContent = name;
+  document.getElementById('del-overlay').classList.add('open');
+}
+function closeDelete() {
+  document.getElementById('del-overlay').classList.remove('open');
+  delTarget = null;
+}
+async function confirmDelete() {
+  if (!delTarget) return;
+  const id = delTarget;
+  closeDelete();
+  const res = await api('DELETE', '/users/' + id);
+  if (res.success) {
+    toast('User deleted.', 'success');
+    // Step back a page if we deleted the last item on a page > 1
+    if (s.page > 1 && s.total - 1 <= (s.page - 1) * s.perPage) s.page--;
+    await loadUsers();
+  } else {
+    toast(res.message || 'Delete failed.', 'error');
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const c = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-dot"></span>${esc(msg)}`;
+  c.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 320);
+  }, 3600);
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function onSearch(e) {
+  clearTimeout(searchTm);
+  searchTm = setTimeout(() => {
+    s.search = e.target.value.trim();
+    s.page   = 1;
+    loadUsers();
+  }, 320);
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadUsers();
+
+  document.getElementById('btn-add')       .addEventListener('click',  openCreate);
+  document.getElementById('search')        .addEventListener('input',  onSearch);
+  document.getElementById('user-form')     .addEventListener('submit', onFormSubmit);
+  document.getElementById('form-close')    .addEventListener('click',  closeForm);
+  document.getElementById('form-cancel')   .addEventListener('click',  closeForm);
+  document.getElementById('form-overlay')  .addEventListener('click',  e => { if(e.target===e.currentTarget) closeForm(); });
+
+  document.getElementById('del-close')     .addEventListener('click',  closeDelete);
+  document.getElementById('del-cancel')    .addEventListener('click',  closeDelete);
+  document.getElementById('del-confirm')   .addEventListener('click',  confirmDelete);
+  document.getElementById('del-overlay')   .addEventListener('click',  e => { if(e.target===e.currentTarget) closeDelete(); });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeForm(); closeDelete(); }
+  });
+});
+</script>
+</body>
+</html>
+

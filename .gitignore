@@ -1,0 +1,13 @@
+# Cargo build output
+/target/
+
+# rustfmt backups
+**/*.rs.bk
+
+# SQLite database created at runtime
+*.db
+*.db-wal
+*.db-shm
+
+# macOS
+.DS_Store
